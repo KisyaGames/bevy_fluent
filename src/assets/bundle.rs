@@ -14,11 +14,13 @@ use serde::{Deserialize, Serialize};
 use std::{ops::Deref, path::PathBuf, str, sync::Arc};
 use unic_langid::LanguageIdentifier;
 
+pub type ConcurrentFluentBundle = FluentBundle<Arc<FluentResource>, IntlLangMemoizer>;
+
 /// [`FluentBundle`](fluent::bundle::FluentBundle) wrapper
 ///
 /// Collection of [`FluentResource`]s for a single locale
 #[derive(Asset, Clone, TypePath)]
-pub struct BundleAsset(pub(crate) Arc<FluentBundle<Arc<FluentResource>, IntlLangMemoizer>>);
+pub struct BundleAsset(pub(crate) Arc<ConcurrentFluentBundle>);
 
 impl Deref for BundleAsset {
     type Target = FluentBundle<Arc<FluentResource>, IntlLangMemoizer>;
@@ -30,9 +32,17 @@ impl Deref for BundleAsset {
 
 /// [`AssetLoader`](bevy::asset::AssetLoader) implementation for [`BundleAsset`]
 #[derive(Default)]
-pub struct BundleAssetLoader;
+pub struct BundleAssetLoader<CustomizeFn>
+where
+    CustomizeFn: Fn(&mut ConcurrentFluentBundle) + Send + Sync + Copy + 'static,
+{
+    pub customize_bundle_fn: CustomizeFn,
+}
 
-impl AssetLoader for BundleAssetLoader {
+impl<CustomizeFn> AssetLoader for BundleAssetLoader<CustomizeFn>
+where
+    CustomizeFn: Fn(&mut ConcurrentFluentBundle) + Send + Sync + Copy + 'static,
+{
     type Asset = BundleAsset;
     type Settings = ();
     type Error = Error;
@@ -48,10 +58,20 @@ impl AssetLoader for BundleAssetLoader {
         reader.read_to_string(&mut content).await?;
         match path.extension() {
             Some(extension) if extension == "ron" => {
-                load(ron::de::from_str(&content)?, load_context).await
+                load(
+                    ron::de::from_str(&content)?,
+                    load_context,
+                    self.customize_bundle_fn,
+                )
+                .await
             }
             Some(extension) if extension == "yaml" || extension == "yml" => {
-                load(serde_yaml::from_str(&content)?, load_context).await
+                load(
+                    serde_yaml::from_str(&content)?,
+                    load_context,
+                    self.customize_bundle_fn,
+                )
+                .await
             }
             _ => unreachable!("We already check all the supported extensions."),
         }
@@ -71,8 +91,13 @@ struct Data {
 }
 
 #[instrument(fields(path = %load_context.path().display()), skip_all)]
-async fn load(data: Data, load_context: &mut LoadContext<'_>) -> Result<BundleAsset> {
+async fn load(
+    data: Data,
+    load_context: &mut LoadContext<'_>,
+    customize: impl Fn(&mut ConcurrentFluentBundle),
+) -> Result<BundleAsset> {
     let mut bundle = FluentBundle::new_concurrent(vec![data.locale.clone()]);
+    customize(&mut bundle);
     for mut path in data.resources {
         if path.is_relative() {
             if let Some(parent) = load_context.path().parent() {
