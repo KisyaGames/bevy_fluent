@@ -20,7 +20,7 @@ pub type ConcurrentFluentBundle = FluentBundle<Arc<FluentResource>, IntlLangMemo
 ///
 /// Collection of [`FluentResource`]s for a single locale
 #[derive(Asset, Clone, TypePath)]
-pub struct BundleAsset(pub(crate) Arc<ConcurrentFluentBundle>);
+pub struct BundleAsset(pub Arc<ConcurrentFluentBundle>);
 
 impl Deref for BundleAsset {
     type Target = FluentBundle<Arc<FluentResource>, IntlLangMemoizer>;
