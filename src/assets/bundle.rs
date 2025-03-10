@@ -47,11 +47,11 @@ where
     type Settings = ();
     type Error = Error;
 
-    async fn load<'a>(
-        &'a self,
-        reader: &'a mut Reader<'_>,
-        _: &'a Self::Settings,
-        load_context: &'a mut LoadContext<'_>,
+    async fn load(
+        &self,
+        reader: &mut dyn Reader,
+        _: &Self::Settings,
+        load_context: &mut LoadContext<'_>,
     ) -> Result<Self::Asset, Self::Error> {
         let path = load_context.path();
         let mut content = String::new();
@@ -104,7 +104,12 @@ async fn load(
                 path = parent.join(path);
             }
         }
-        let loaded = load_context.loader().direct().untyped().load(path).await?;
+        let loaded = load_context
+            .loader()
+            .immediate()
+            .with_unknown_type()
+            .load(path)
+            .await?;
         let resource = loaded.get::<ResourceAsset>().unwrap();
         if let Err(errors) = bundle.add_resource(resource.0.clone()) {
             warn_span!("add_resource").in_scope(|| {
