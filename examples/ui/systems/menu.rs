@@ -155,7 +155,7 @@ pub fn setup(
 
 pub fn cleanup(mut commands: Commands, query: Query<Entity, With<Menu>>) {
     for entity in query.iter() {
-        commands.entity(entity).despawn_recursive();
+        commands.entity(entity).despawn();
     }
 }
 
@@ -176,7 +176,7 @@ pub fn next(
     mut next_state: ResMut<NextState<GameState>>,
     query: Query<&Interaction, (Changed<Interaction>, With<NextButton>)>,
 ) {
-    if let Ok(Interaction::Pressed) = query.get_single() {
+    if let Ok(Interaction::Pressed) = query.single() {
         swiper.next();
         next_state.set(GameState::Load);
     }
@@ -187,7 +187,7 @@ pub fn previous(
     mut next_state: ResMut<NextState<GameState>>,
     query: Query<&Interaction, (Changed<Interaction>, With<PreviousButton>)>,
 ) {
-    if let Ok(Interaction::Pressed) = query.get_single() {
+    if let Ok(Interaction::Pressed) = query.single() {
         swiper.previous();
         next_state.set(GameState::Load);
     }

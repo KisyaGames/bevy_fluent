@@ -18,8 +18,9 @@ categories = [
 exclude = [".github/**/*"]
 
 [dependencies]
-bevy = { version = "0.15", default-features = false, features = [
+bevy = { version = "0.16", default-features = false, features = [
   "bevy_asset",
+  "bevy_log",
 ] }
 fluent = "0.16.0"
 fluent-langneg = "0.13.0"
@@ -36,5 +37,5 @@ unic-langid = { version = "0.9.4", features = ["serde"] }
 uuid = { version = "1.7.0", features = ["serde", "v4", "v5"] }
 
 [dev-dependencies]
-bevy = "0.15"
+bevy = "0.16"
 unic-langid = { version = "0.9.4", features = ["macros"] }

@@ -6,12 +6,12 @@ use bevy::{
     asset::{io::Reader, AssetLoader, AsyncReadExt, LoadContext},
     prelude::*,
     reflect::TypePath,
-    utils::tracing::instrument,
 };
 use fluent::{bundle::FluentBundle, FluentResource};
 use intl_memoizer::concurrent::IntlLangMemoizer;
 use serde::{Deserialize, Serialize};
 use std::{ops::Deref, path::PathBuf, str, sync::Arc};
+use tracing::instrument;
 use unic_langid::LanguageIdentifier;
 
 pub type ConcurrentFluentBundle = FluentBundle<Arc<FluentResource>, IntlLangMemoizer>;

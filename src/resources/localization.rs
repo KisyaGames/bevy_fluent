@@ -1,7 +1,7 @@
 //! Localization asset
 
 use crate::{exts::fluent::BundleExt, BundleAsset};
-use bevy::{prelude::*, utils::tracing::instrument};
+use bevy::prelude::*;
 use fluent::FluentArgs;
 use fluent_content::{Content, Request};
 use indexmap::IndexMap;
@@ -10,6 +10,7 @@ use std::{
     fmt::{self, Debug, Formatter},
     ops::{Deref, DerefMut},
 };
+use tracing::instrument;
 use unic_langid::LanguageIdentifier;
 
 /// Localization
