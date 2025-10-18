@@ -33,7 +33,7 @@ impl LocalizationBuilder<'_> {
                         return None;
                     }
                     // TODO
-                    let typed_handle = untyped_handle.clone_weak().typed();
+                    let typed_handle = untyped_handle.clone().typed();
                     if let Some(asset) = self.assets.get(&typed_handle) {
                         Some((asset.locale(), Entry { handle: typed_handle, asset }))
                     } else {
